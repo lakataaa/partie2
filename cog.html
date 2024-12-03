@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>COG - Cloud Optimized GeoTIFF</title>
+    <link rel="stylesheet" href="default.css">
+    <link rel="stylesheet" href="fonts.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css">
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <!-- GeoRaster and GeoRasterLayer JS -->
+    <script src="https://unpkg.com/proj4"></script>
+    <script src="https://unpkg.com/georaster"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
+</head>
+<body>
+<div id="header-wrapper">
+    <div id="header" class="container fade-in">
+        <div id="logo">
+            <span class="icon icon-cog"></span>
+            <h1><a href="index.html">COG</a></h1>
+        </div>
+        <div id="menu">
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li class="active"><a href="cog.html">COG</a></li>
+                <li><a href="geoparquet.html">GeoParquet</a></li>
+                <li><a href="zarr.html">ZARR</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Section 1 : Introduction au COG -->
+<div class="wrapper fade-in">
+    <div id="welcome" class="container">
+        <div class="title">
+            <h2>Qu'est-ce qu'un Cloud Optimized GeoTIFF (COG) ?</h2>
+        </div>
+        <p>
+            Le Cloud Optimized GeoTIFF (COG) est un format de fichier utilisé pour stocker des données géospatiales rasterisées. 
+            Il permet une lecture rapide et efficace sur le cloud sans avoir besoin de télécharger l'intégralité du fichier.
+        </p>
+        <p>
+            <b>Utilité :</b> Le COG est largement utilisé dans des applications telles que la télédétection, la cartographie et les analyses géospatiales.
+        </p>
+        <p>
+            <b>Fonctionnement :</b> Le COG utilise des index internes pour permettre l'accès à des parties spécifiques du fichier, ce qui le rend optimal 
+            pour le stockage et la visualisation de grandes quantités de données directement depuis le cloud.
+        </p>
+    </div>
+</div>
+
+<!-- Section 2 : Visualisation de la carte -->
+<div class="wrapper fade-in">
+    <div id="map-section" class="container">
+        <div class="title">
+            <h2>Visualisation d'un COG</h2>
+        </div>
+        <p>
+            Ci-dessous, vous trouverez une visualisation d'un fichier COG représentant une image satellite de la mosquee hassan 2. La carte est interactive et vous permet 
+            de zoomer et de naviguer dans les données géospatiales.
+        </p>
+        <div id="map" style="width: 100%; height: 500px; margin-top: 20px; border: 1px solid #ddd;"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html" class="button">Retour à l'accueil</a>
+        </div>
+    </div>
+</div>
+
+<div id="footer" class="fade-in">
+    <div class="container">
+        <p>&copy; 2024. Réalisé avec le template Undeviating.</p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const fadeInElements = document.querySelectorAll(".fade-in");
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                    } else {
+                        entry.target.classList.remove("visible");
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        fadeInElements.forEach((el) => observer.observe(el));
+    });
+
+    // Initialisation de la carte
+    document.addEventListener("DOMContentLoaded", () => {
+        var map = L.map('map', {
+            zoomControl: true,
+            dragging: true, 
+            scrollWheelZoom: true,
+            doubleClickZoom: true,
+        }).setView([0, 0], 3); // Coordonnées initiales
+
+        // Ajouter une couche OpenStreetMap
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // URL du fichier GeoTIFF (COG)
+        const url_to_geotiff_file = "https://cog-2024.s3.eu-north-1.amazonaws.com/cog/mosqueecasa_cog.tif";
+
+        // Charger et afficher le GeoTIFF
+        parseGeoraster(url_to_geotiff_file).then(georaster => {
+            var layer = new GeoRasterLayer({
+                attribution: "Données de test",
+                georaster,
+                resolution: 256 // Résolution pour afficher les données
+            });
+            layer.addTo(map);
+
+            // Ajuster la vue de la carte à l'étendue des données
+            map.fitBounds(layer.getBounds());
+        });
+    });
+</script>
+
+</body>
+</html>
